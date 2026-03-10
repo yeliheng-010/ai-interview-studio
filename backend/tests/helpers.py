@@ -41,6 +41,7 @@ def build_mock_graph_state() -> dict:
         "extraction_error_message": None,
         "target_role": "backend engineer",
         "interview_style": "project-deep-dive",
+        "job_description_text": "负责后端服务开发，要求熟悉 Python、FastAPI、PostgreSQL、缓存和接口设计。",
         "resume_summary": {
             "summary": "一名偏后端的软件工程师，熟悉 Python、FastAPI 和数据库设计。",
             "technical_stack": ["Python", "FastAPI", "PostgreSQL"],
@@ -70,5 +71,6 @@ def build_mock_graph_state() -> dict:
             "interview_style": "project-deep-dive",
             "extraction_status": "validated",
             "extraction_quality_score": 88.5,
+            "job_description_provided": True,
         },
     }

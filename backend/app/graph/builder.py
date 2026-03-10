@@ -24,6 +24,7 @@ from app.utils.interview import (
     build_reference_fallback,
     normalize_generated_item,
     normalize_question_key,
+    resolve_job_description_text,
     resolve_interview_style,
     resolve_target_role,
 )
@@ -89,6 +90,7 @@ class InterviewGraphRunner:
         pdf_bytes: bytes,
         target_role: str | None = None,
         interview_style: str | None = None,
+        job_description_text: str | None = None,
     ) -> InterviewGraphState:
         return await self.graph.ainvoke(
             {
@@ -97,6 +99,7 @@ class InterviewGraphRunner:
                 "pdf_bytes": pdf_bytes,
                 "target_role": resolve_target_role(target_role),
                 "interview_style": resolve_interview_style(interview_style),
+                "job_description_text": resolve_job_description_text(job_description_text),
                 "errors": [],
             }
         )
@@ -109,6 +112,7 @@ class InterviewGraphRunner:
         raw_text: str,
         target_role: str | None = None,
         interview_style: str | None = None,
+        job_description_text: str | None = None,
     ) -> InterviewGraphState:
         return await self.graph.ainvoke(
             {
@@ -117,6 +121,7 @@ class InterviewGraphRunner:
                 "raw_text": raw_text,
                 "target_role": resolve_target_role(target_role),
                 "interview_style": resolve_interview_style(interview_style),
+                "job_description_text": resolve_job_description_text(job_description_text),
                 "errors": [],
             }
         )
@@ -151,6 +156,7 @@ class InterviewGraphRunner:
             cleaned_text=state["cleaned_text"],
             target_role=state.get("target_role", DEFAULT_TARGET_ROLE),
             interview_style=state.get("interview_style", DEFAULT_INTERVIEW_STYLE),
+            job_description_text=state.get("job_description_text") or "未提供岗位 JD。",
         )
         response = await self.llm.complete_json(
             system_prompt=JSON_SYSTEM_PROMPT,
@@ -166,6 +172,7 @@ class InterviewGraphRunner:
             cleaned_text=state["cleaned_text"],
             target_role=state.get("target_role", DEFAULT_TARGET_ROLE),
             interview_style=state.get("interview_style", DEFAULT_INTERVIEW_STYLE),
+            job_description_text=state.get("job_description_text") or "未提供岗位 JD。",
         )
         response = await self.llm.complete_json(
             system_prompt=JSON_SYSTEM_PROMPT,
@@ -281,6 +288,7 @@ class InterviewGraphRunner:
             "interview_style": state.get("interview_style", DEFAULT_INTERVIEW_STYLE),
             "extraction_status": state.get("extraction_status", "validated"),
             "extraction_quality_score": state.get("extraction_quality_score", 0.0),
+            "job_description_provided": bool(state.get("job_description_text")),
         }
         return {"title": title, "meta": meta}
 
@@ -300,6 +308,7 @@ class InterviewGraphRunner:
             strategy=json.dumps(state["strategy"], ensure_ascii=False, indent=2),
             target_role=state.get("target_role", DEFAULT_TARGET_ROLE),
             interview_style=state.get("interview_style", DEFAULT_INTERVIEW_STYLE),
+            job_description_text=state.get("job_description_text") or "未提供岗位 JD。",
         )
         response = await self.llm.complete_json(
             system_prompt=JSON_SYSTEM_PROMPT,
@@ -336,6 +345,7 @@ class InterviewGraphRunner:
             existing_questions=json.dumps(existing_questions, ensure_ascii=False, indent=2),
             target_role=state.get("target_role", DEFAULT_TARGET_ROLE),
             interview_style=state.get("interview_style", DEFAULT_INTERVIEW_STYLE),
+            job_description_text=state.get("job_description_text") or "未提供岗位 JD。",
         )
         try:
             response = await self.llm.complete_json(

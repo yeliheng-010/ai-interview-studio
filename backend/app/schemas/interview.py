@@ -54,6 +54,7 @@ class InterviewSetDetail(BaseModel):
     created_at: datetime
     resume_session_id: int
     meta_json: dict[str, Any]
+    job_description_text: str | None = None
     resume_summary: ResumeSummaryRead
     strategy: StrategyRead
     total_question_count: int

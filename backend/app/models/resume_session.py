@@ -20,6 +20,7 @@ class ResumeSession(Base, CreatedAtMixin):
     extraction_error_message: Mapped[str | None] = mapped_column(Text, nullable=True)
     target_role: Mapped[str] = mapped_column(String(64), nullable=False, default="software engineer")
     interview_style: Mapped[str] = mapped_column(String(64), nullable=False, default="standard")
+    job_description_text: Mapped[str | None] = mapped_column(Text, nullable=True)
     resume_summary_json: Mapped[dict] = mapped_column(JSONVariant, nullable=False, default=dict)
     strategy_json: Mapped[dict] = mapped_column(JSONVariant, nullable=False, default=dict)
     total_questions: Mapped[int] = mapped_column(Integer, nullable=False, default=20)

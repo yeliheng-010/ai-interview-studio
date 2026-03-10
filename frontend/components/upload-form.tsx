@@ -13,8 +13,10 @@ import { InterviewSetDetail } from "@/types/api";
 export function UploadForm() {
   const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
+  const [jobDescriptionFile, setJobDescriptionFile] = useState<File | null>(null);
   const [targetRole, setTargetRole] = useState("software engineer");
   const [interviewStyle, setInterviewStyle] = useState("standard");
+  const [jobDescriptionText, setJobDescriptionText] = useState("");
   const [error, setError] = useState<string>("");
 
   const mutation = useMutation({
@@ -25,8 +27,14 @@ export function UploadForm() {
 
       const formData = new FormData();
       formData.append("file", file);
+      if (jobDescriptionFile) {
+        formData.append("jd_file", jobDescriptionFile);
+      }
       formData.append("target_role", targetRole);
       formData.append("interview_style", interviewStyle);
+      if (jobDescriptionText.trim()) {
+        formData.append("job_description_text", jobDescriptionText.trim());
+      }
 
       const response = await api.post<InterviewSetDetail>("/interviews/generate", formData, {
         headers: { "Content-Type": "multipart/form-data" }
@@ -43,6 +51,11 @@ export function UploadForm() {
 
   const onFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     setFile(event.target.files?.[0] ?? null);
+    setError("");
+  };
+
+  const onJobDescriptionFileChange = (event: ChangeEvent<HTMLInputElement>) => {
+    setJobDescriptionFile(event.target.files?.[0] ?? null);
     setError("");
   };
 
@@ -109,6 +122,30 @@ export function UploadForm() {
                     ))}
                   </select>
                 </label>
+                <div className="block text-sm">
+                  <span className="font-medium">岗位 JD</span>
+                  <label className="mt-2 flex cursor-pointer flex-col rounded-[18px] border border-dashed border-line bg-white/70 px-4 py-3 transition hover:bg-white">
+                    <span className="text-sm font-medium">上传 JD 文件</span>
+                    <span className="mt-1 text-xs muted-text">
+                      支持 `.txt`、`.md`、`.pdf`。如果同时上传文件并粘贴文本，系统会合并两者一起出题。
+                    </span>
+                    <input
+                      type="file"
+                      accept=".txt,.md,.markdown,.pdf,text/plain,text/markdown,application/pdf"
+                      className="hidden"
+                      onChange={onJobDescriptionFileChange}
+                    />
+                  </label>
+                  <div className="mt-2 text-xs muted-text">
+                    {jobDescriptionFile ? `已选择 JD 文件：${jobDescriptionFile.name}` : "未上传 JD 文件"}
+                  </div>
+                  <textarea
+                    value={jobDescriptionText}
+                    onChange={(event) => setJobDescriptionText(event.target.value)}
+                    className="mt-3 min-h-40 w-full rounded-[18px] border border-line bg-white/80 px-4 py-3 outline-none transition focus:border-accent"
+                    placeholder="可选。也可以直接粘贴岗位职责、任职要求、技术栈要求等。"
+                  />
+                </div>
               </div>
             </div>
 

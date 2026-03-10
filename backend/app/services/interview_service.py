@@ -7,6 +7,11 @@ from sqlalchemy.orm import Session, joinedload, selectinload, with_loader_criter
 from app.core.llm import LLMError
 from app.graph.builder import InterviewGraphRunner
 from app.models import Question, QuestionSet, ResumeSession, UserAnswer
+from app.utils.job_description import (
+    JobDescriptionExtractionError,
+    extract_job_description_text,
+    merge_job_description_inputs,
+)
 from app.utils.pdf import PDFExtractionError
 
 
@@ -20,8 +25,10 @@ class InterviewGenerationService:
         *,
         user_id: int,
         upload: UploadFile,
+        jd_upload: UploadFile | None = None,
         target_role: str | None = None,
         interview_style: str | None = None,
+        job_description_text: str | None = None,
     ) -> QuestionSet:
         file_name = upload.filename or "resume.pdf"
         if not file_name.lower().endswith(".pdf"):
@@ -37,6 +44,11 @@ class InterviewGenerationService:
                 detail="Uploaded PDF is empty.",
             )
 
+        resolved_job_description_text = await self._resolve_job_description_text(
+            jd_upload=jd_upload,
+            pasted_text=job_description_text,
+        )
+
         try:
             state = await self.graph_runner.run(
                 user_id=user_id,
@@ -44,6 +56,7 @@ class InterviewGenerationService:
                 pdf_bytes=pdf_bytes,
                 target_role=target_role,
                 interview_style=interview_style,
+                job_description_text=resolved_job_description_text,
             )
         except PDFExtractionError as exc:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
@@ -51,6 +64,31 @@ class InterviewGenerationService:
             raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=str(exc)) from exc
 
         return self._persist_generated_state(user_id=user_id, state=state)
+
+    async def _resolve_job_description_text(
+        self,
+        *,
+        jd_upload: UploadFile | None,
+        pasted_text: str | None,
+    ) -> str:
+        uploaded_text = ""
+        if jd_upload is not None:
+            file_name = jd_upload.filename or "job-description.txt"
+            file_bytes = await jd_upload.read()
+            if not file_bytes:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Uploaded JD file is empty.",
+                )
+            try:
+                uploaded_text = extract_job_description_text(file_bytes, file_name=file_name)
+            except (JobDescriptionExtractionError, PDFExtractionError) as exc:
+                raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
+
+        return merge_job_description_inputs(
+            uploaded_text=uploaded_text,
+            pasted_text=pasted_text,
+        )
 
     async def regenerate_interview_set(
         self,
@@ -75,6 +113,7 @@ class InterviewGenerationService:
                 raw_text=source_session.raw_text,
                 target_role=target_role or source_session.target_role,
                 interview_style=interview_style or source_session.interview_style,
+                job_description_text=source_session.job_description_text,
             )
         except PDFExtractionError as exc:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
@@ -94,6 +133,7 @@ class InterviewGenerationService:
             extraction_error_message=state.get("extraction_error_message"),
             target_role=state["target_role"],
             interview_style=state["interview_style"],
+            job_description_text=state.get("job_description_text") or None,
             resume_summary_json=state["resume_summary"],
             strategy_json=state["strategy"],
             total_questions=len(state["final_items"]),

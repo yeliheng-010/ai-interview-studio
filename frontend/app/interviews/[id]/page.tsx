@@ -216,6 +216,16 @@ export default function InterviewDetailPage({ params }: { params: { id: string }
             </div>
           </section>
 
+          {detail.job_description_text ? (
+            <section className="paper-panel rounded-[28px] p-6">
+              <p className="section-kicker">Job Description</p>
+              <h2 className="display-font mt-3 text-3xl">岗位 JD</h2>
+              <p className="mt-4 whitespace-pre-wrap text-sm leading-8">
+                {detail.job_description_text}
+              </p>
+            </section>
+          ) : null}
+
           <section className="space-y-5">
             {detail.questions.map((question, index) => (
               <QuestionCard

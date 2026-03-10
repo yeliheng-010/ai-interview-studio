@@ -35,7 +35,7 @@ The most important part of this project is not the CRUD surface area. It is the 
 
 ## Product Overview
 
-Users upload a PDF resume, the backend extracts text locally, validates text quality, and sends only cleaned plain text into a LangGraph workflow. The system analyzes the resume, plans an interview strategy, generates 20 programmer-focused interview questions across easy, medium, and hard difficulty levels, and writes reference answers in first-person candidate voice. Everything is persisted for later review and practice.
+Users upload a PDF resume, optionally paste a job description or upload a JD file, and the backend extracts resume text locally, validates text quality, then sends the cleaned resume text plus JD context into a LangGraph workflow. The system analyzes the resume, aligns interview strategy with both the resume and target JD, generates 20 programmer-focused interview questions across easy, medium, and hard difficulty levels, and writes reference answers in first-person candidate voice. Everything is persisted for later review and practice.
 
 ## Agent Framework Highlights
 
@@ -75,6 +75,7 @@ Additional agent workflows:
 
 - JWT-based authentication
 - Resume upload with text-first PDF extraction
+- Optional job description text or file input for JD-aligned questioning
 - Resume analysis and interview strategy planning
 - 20 generated interview questions per set
 - Difficulty distribution: 6 easy, 8 medium, 6 hard

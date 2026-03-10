@@ -21,8 +21,10 @@ router = APIRouter(prefix="/interviews", tags=["interviews"])
 @router.post("/generate", response_model=InterviewSetDetail)
 async def generate_interview_set(
     file: UploadFile = File(...),
+    jd_file: UploadFile | None = File(None),
     target_role: str | None = Form(None),
     interview_style: str | None = Form(None),
+    job_description_text: str | None = Form(None),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ) -> InterviewSetDetail:
@@ -30,8 +32,10 @@ async def generate_interview_set(
     question_set = await service.generate_from_upload(
         user_id=current_user.id,
         upload=file,
+        jd_upload=jd_file,
         target_role=target_role,
         interview_style=interview_style,
+        job_description_text=job_description_text,
     )
     return question_set_to_detail(question_set, favorite_question_ids=set())
 

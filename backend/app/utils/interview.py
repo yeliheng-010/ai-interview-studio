@@ -65,6 +65,14 @@ def resolve_interview_style(value: str | None) -> str:
     return normalized or DEFAULT_INTERVIEW_STYLE
 
 
+def resolve_job_description_text(value: str | None) -> str:
+    if not value:
+        return ""
+    normalized = value.replace("\r\n", "\n").replace("\r", "\n").strip()
+    normalized = re.sub(r"\n{3,}", "\n\n", normalized)
+    return normalized
+
+
 def normalize_question_key(question: str) -> str:
     lowered = normalize_whitespace(question).lower()
     lowered = re.sub(r"[^\w\u4e00-\u9fff]+", "", lowered)

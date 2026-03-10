@@ -16,6 +16,12 @@
 清洗后的简历纯文本：
 {cleaned_text}
 
+岗位 JD：
+{job_description_text}
+
+JD 对齐补充要求：
+1. 如果提供了岗位 JD，新题也要继续对齐 JD 的核心能力要求，不能脱离该岗位语境。
+
 原题：
 {original_question}
 

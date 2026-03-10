@@ -16,6 +16,7 @@ class InterviewGraphState(TypedDict, total=False):
     extraction_error_message: str | None
     target_role: str
     interview_style: str
+    job_description_text: str
     resume_summary: dict[str, Any]
     strategy: dict[str, Any]
     easy_items: list[dict[str, Any]]
@@ -35,6 +36,7 @@ class QuestionRegenerationState(TypedDict, total=False):
     cleaned_text: str
     resume_summary: dict[str, Any]
     strategy: dict[str, Any]
+    job_description_text: str
     target_role: str
     interview_style: str
     existing_questions: list[str]

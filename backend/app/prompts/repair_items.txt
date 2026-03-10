@@ -16,6 +16,12 @@
 面试策略：
 {strategy}
 
+岗位 JD：
+{job_description_text}
+
+JD 对齐补充要求：
+1. 如果提供了岗位 JD，补齐的新题也必须继续对齐 JD 的核心要求，不能因为补题而丢掉 JD 约束。
+
 已存在、不可重复的问题列表：
 {existing_questions}
 

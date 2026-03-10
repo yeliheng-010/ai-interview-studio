@@ -111,6 +111,7 @@ def question_set_to_detail(
         created_at=question_set.created_at,
         resume_session_id=question_set.resume_session_id,
         meta_json=question_set.meta_json,
+        job_description_text=resume_session.job_description_text,
         resume_summary=ResumeSummaryRead.model_validate(resume_session.resume_summary_json),
         strategy=StrategyRead.model_validate(resume_session.strategy_json),
         total_question_count=len(question_set.questions),

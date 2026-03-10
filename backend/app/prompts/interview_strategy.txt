@@ -10,6 +10,7 @@
 2. 让策略真正受目标岗位和面试风格影响，而不是输出空泛模板。
 3. 当简历信息很弱时，明确进入通用程序员面试兜底模式，但仍要保证题目有训练价值。
 4. 固定难度分布为 easy=6, medium=8, hard=6，不得更改。
+5. 如果提供了岗位 JD，策略必须显式体现“JD 要求”和“简历证据”的交集，并适当覆盖 JD 中存在但简历证据较弱的关键能力点。
 
 输入一：结构化简历摘要
 {resume_summary}
@@ -17,13 +18,17 @@
 输入二：简历纯文本
 {cleaned_text}
 
+输入三：岗位 JD
+{job_description_text}
+
 策略推理原则：
 1. 先看简历证据，再决定重点，不要反过来硬套岗位刻板印象。
-2. 如果目标岗位是 backend engineer / Java engineer / Python engineer / Go engineer，优先强调接口设计、数据建模、并发、可用性、性能、排障、工程交付。
-3. 如果目标岗位是 frontend engineer，优先强调组件设计、状态管理、性能优化、工程化、浏览器与网络、可维护性。
-4. 如果目标岗位是 full-stack engineer，重点兼顾前后端协同、数据流、接口边界、交付效率与架构取舍。
-5. 如果目标岗位是 DevOps engineer 或 test development engineer，可提高自动化、发布流程、可观测性、稳定性与质量保障相关权重。
-6. 面试风格影响提问方式：
+2. 如果提供了岗位 JD，优先选择“JD 高频要求 + 简历已有证据”作为核心出题方向，再补充少量“JD 要求强但简历证据弱”的追问题。
+3. 如果目标岗位是 backend engineer / Java engineer / Python engineer / Go engineer，优先强调接口设计、数据建模、并发、可用性、性能、排障、工程交付。
+4. 如果目标岗位是 frontend engineer，优先强调组件设计、状态管理、性能优化、工程化、浏览器与网络、可维护性。
+5. 如果目标岗位是 full-stack engineer，重点兼顾前后端协同、数据流、接口边界、交付效率与架构取舍。
+6. 如果目标岗位是 DevOps engineer 或 test development engineer，可提高自动化、发布流程、可观测性、稳定性与质量保障相关权重。
+7. 面试风格影响提问方式：
    - fundamentals-heavy：更强调基础原理、底层理解、常见概念辨析。
    - project-deep-dive：更强调项目背景、方案选择、复盘与取舍。
    - system-design-heavy：更强调扩展性、稳定性、一致性、容量规划与架构演进。

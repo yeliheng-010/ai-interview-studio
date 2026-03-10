@@ -88,6 +88,7 @@ export type InterviewSetDetail = {
   created_at: string;
   resume_session_id: number;
   meta_json: Record<string, unknown>;
+  job_description_text: string | null;
   resume_summary: ResumeSummary;
   strategy: Strategy;
   total_question_count: number;

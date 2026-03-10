@@ -152,6 +152,7 @@ class PracticeService:
                 cleaned_text=resume_session.cleaned_text,
                 resume_summary=resume_session.resume_summary_json,
                 strategy=resume_session.strategy_json,
+                job_description_text=resume_session.job_description_text,
                 existing_questions=[item.question_text for item in question_set.questions],
                 original_question=question.question_text,
                 target_role=target_role or resume_session.target_role,

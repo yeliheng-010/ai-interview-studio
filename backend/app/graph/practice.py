@@ -16,6 +16,7 @@ from app.utils.interview import (
     build_reference_fallback,
     normalize_generated_item,
     normalize_question_key,
+    resolve_job_description_text,
     resolve_interview_style,
     resolve_target_role,
 )
@@ -51,6 +52,7 @@ class QuestionRegenerationGraphRunner:
         cleaned_text: str,
         resume_summary: dict[str, Any],
         strategy: dict[str, Any],
+        job_description_text: str | None,
         existing_questions: list[str],
         original_question: str,
         target_role: str | None = None,
@@ -65,6 +67,7 @@ class QuestionRegenerationGraphRunner:
                 "cleaned_text": cleaned_text,
                 "resume_summary": resume_summary,
                 "strategy": strategy,
+                "job_description_text": resolve_job_description_text(job_description_text),
                 "existing_questions": existing_questions,
                 "original_question": original_question,
                 "target_role": resolve_target_role(target_role or strategy.get("target_role")),
@@ -97,6 +100,7 @@ class QuestionRegenerationGraphRunner:
             original_question=state["original_question"],
             target_role=state.get("target_role", DEFAULT_TARGET_ROLE),
             interview_style=state.get("interview_style", DEFAULT_INTERVIEW_STYLE),
+            job_description_text=state.get("job_description_text") or "未提供岗位 JD。",
         )
         response = await self.llm.complete_json(
             system_prompt=JSON_SYSTEM_PROMPT,
