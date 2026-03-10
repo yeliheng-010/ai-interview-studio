@@ -1,0 +1,13 @@
+.env
+.env.local
+.pytest_cache/
+__pycache__/
+.mypy_cache/
+.coverage
+htmlcov/
+*.pyc
+backend/.env
+frontend/.env
+frontend/.next/
+frontend/node_modules/
+backend/tests/test.db
