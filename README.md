@@ -87,6 +87,17 @@ Additional agent workflows:
 - Full interview set regeneration
 - Single-question regeneration
 
+## JD-Aligned Usage
+
+Use this flow when you want the interview set to reflect both your own experience and a target role.
+
+1. Upload your PDF resume.
+2. Add job-description context by either pasting JD text into the form or uploading a JD file in `.txt`, `.md`, or `.pdf` format.
+3. If you provide both JD text and a JD file, the backend merges them into one combined JD context before question generation starts.
+4. Generate the interview set as usual.
+5. The workflow will bias questions toward the overlap between your resume evidence and the JD requirements, while also probing areas the JD expects but your resume covers only weakly.
+6. The saved JD context is reused when you regenerate the full set or regenerate a single question later.
+
 ## Text-First Resume Workflow
 
 This project is intentionally text-first.
