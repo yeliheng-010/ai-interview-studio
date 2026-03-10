@@ -60,7 +60,7 @@ def build_mock_graph_state() -> dict:
             "interview_tone": "真实程序员技术面试",
         },
         "final_items": final_items,
-        "title": "backend engineer 模拟面试题集",
+        "title": "backend engineer 面试训练题集",
         "meta": {
             "difficulty_breakdown": {"easy": 6, "medium": 8, "hard": 6},
             "categories": ["后端开发"],

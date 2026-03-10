@@ -1,5 +1,5 @@
-const TOKEN_KEY = "ai_mock_interview_token";
-const COOKIE_NAME = "aimi_token";
+const TOKEN_KEY = "ai_interview_studio_token";
+const COOKIE_NAME = "ais_token";
 
 export function getToken(): string | null {
   if (typeof window === "undefined") {

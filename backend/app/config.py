@@ -15,11 +15,11 @@ class Settings(BaseSettings):
         case_sensitive=False,
     )
 
-    app_name: str = "AI Mock Interview Platform"
+    app_name: str = "AI Interview Studio"
     app_env: str = "development"
     api_prefix: str = "/api"
 
-    database_url: str = "postgresql+psycopg://postgres:postgres@postgres:5432/mock_interview"
+    database_url: str = "postgresql+psycopg://postgres:postgres@postgres:5432/interview_studio"
     secret_key: str = "change-me"
     jwt_algorithm: str = "HS256"
     access_token_expire_minutes: int = 60 * 24 * 7

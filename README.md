@@ -1,4 +1,4 @@
-# AI Mock Interview Platform
+# AI Interview Studio
 
 <p align="center">
   <a href="./README.md"><strong>English</strong></a> |
@@ -10,30 +10,66 @@
   <img src="https://img.shields.io/badge/FastAPI-Backend-009688?logo=fastapi&logoColor=white" alt="FastAPI" />
   <img src="https://img.shields.io/badge/Next.js-App%20Router-000000?logo=nextdotjs&logoColor=white" alt="Next.js" />
   <img src="https://img.shields.io/badge/LangGraph-StateGraph-FF6B35" alt="LangGraph" />
+  <img src="https://img.shields.io/badge/Agentic-Workflow%20Design-6C5CE7" alt="Agentic Workflow Design" />
   <img src="https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql&logoColor=white" alt="PostgreSQL" />
   <img src="https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white" alt="Docker Compose" />
   <img src="https://img.shields.io/badge/License-MIT-green.svg" alt="MIT License" />
 </p>
 
-An end-to-end AI interview practice platform that turns a PDF resume into a reviewable, persistent, programmer-focused mock interview experience.
+An end-to-end AI interview practice platform built to showcase agent-framework design, explicit workflow orchestration, and production-style full-stack engineering.
 
-This project is designed as a portfolio-quality full-stack application. It demonstrates local PDF text extraction, LangGraph-based orchestration, production-style FastAPI and PostgreSQL backend design, Next.js frontend implementation, Dockerized local development, persistent study workflows, and structured LLM feedback loops for practice.
+The most important part of this project is not the CRUD surface area. It is the way the system models resume understanding, interview planning, question generation, repair, regeneration, and answer evaluation as explicit LangGraph workflows with structured state, typed contracts, deterministic post-processing, and persistent business data.
 
 ## Preview
 
-![AI Mock Interview Platform homepage](docs/images/github-homepage.png)
+![AI Interview Studio homepage](docs/images/github-homepage.png)
 
-## Why This Project Is Strong for a Portfolio
+## Why This Project Stands Out to Interviewers
 
-- It is a full product, not a one-off script
-- It combines backend engineering, frontend product UX, database design, LLM orchestration, and deployment workflow
-- It uses LangGraph as a real orchestration layer instead of a plain function chain
-- It stores business data persistently for history, favorites, user answers, and AI feedback
-- It solves a realistic product problem: turning resumes into tailored practice material
+- It shows how I model agent systems as explicit state machines rather than prompt wrappers
+- It uses LangGraph `StateGraph` for real orchestration instead of a linear function pipeline
+- It separates workflow orchestration from business persistence, which keeps the system maintainable
+- It demonstrates recovery-oriented design through validation, deduplication, repair, and regeneration nodes
+- It includes evaluation loops, not just generation loops, through user-answer feedback workflows
+- It is still a complete product, so the agent architecture is grounded in real user-facing behavior
 
 ## Product Overview
 
 Users upload a PDF resume, the backend extracts text locally, validates text quality, and sends only cleaned plain text into a LangGraph workflow. The system analyzes the resume, plans an interview strategy, generates 20 programmer-focused interview questions across easy, medium, and hard difficulty levels, and writes reference answers in first-person candidate voice. Everything is persisted for later review and practice.
+
+## Agent Framework Highlights
+
+This repository is designed to communicate agentic-system thinking clearly:
+
+- **Explicit graph state**: resume extraction, cleaned text, resume summary, strategy, per-difficulty items, final items, and errors are modeled as shared workflow state
+- **Specialized nodes**: each graph node owns one responsibility instead of bundling the whole workflow into one oversized prompt
+- **Structured contracts**: every LLM hop is validated with typed schemas before downstream nodes consume the result
+- **Repair loop**: the workflow does not stop at first-pass generation; it deduplicates, repairs, and fills missing items automatically
+- **Evaluation loop**: user-written answers are evaluated through a separate LangGraph path, showing that the system supports both generation and critique
+- **Deterministic guardrails**: local PDF extraction, text validation, normalization, fallback behavior, and persistence rules make the workflow more robust than a naive prompt chain
+- **Business/runtime separation**: PostgreSQL stores product data while LangGraph handles runtime orchestration
+
+## Workflow Architecture
+
+```mermaid
+flowchart LR
+    A[Upload PDF Resume] --> B[extract_pdf_text]
+    B --> C[clean_resume_text]
+    C --> D[validate_resume_text]
+    D --> E[analyze_resume]
+    E --> F[plan_interview_strategy]
+    F --> G[generate_easy_questions_and_answers]
+    G --> H[generate_medium_questions_and_answers]
+    H --> I[generate_hard_questions_and_answers]
+    I --> J[deduplicate_and_repair]
+    J --> K[finalize_payload]
+    K --> L[Persist to PostgreSQL]
+```
+
+Additional agent workflows:
+
+- **Question regeneration workflow**: prepare local context, generate a replacement question, validate it, and fall back safely if needed
+- **Answer feedback workflow**: compare the question, the user answer, and the reference answer, then produce structured scoring and an improved answer
 
 ## Core Features
 
@@ -90,6 +126,13 @@ The main `StateGraph` includes:
 
 These keep generation and evaluation workflows explicit, inspectable, and maintainable.
 
+## What I Want An Interviewer To Notice
+
+1. I know how to decompose an LLM feature into explicit workflow stages with typed intermediate state.
+2. I understand that agent systems need validation, repair, and fallback behavior, not just "call the model once".
+3. I treat persistence, orchestration, and UI as separate layers with clear responsibilities.
+4. I can turn agent workflows into a product that supports review, regeneration, and critique rather than one-shot output.
+
 ## Tech Stack
 
 ### Backend
@@ -122,7 +165,7 @@ These keep generation and evaluation workflows explicit, inspectable, and mainta
 ## Project Structure
 
 ```text
-ai-mock-interview-platform/
+ai-interview-studio/
 |-- backend/
 |   |-- app/
 |   |   |-- core/
@@ -171,9 +214,9 @@ Copy:
 Backend example:
 
 ```env
-APP_NAME=AI Mock Interview Platform
+APP_NAME=AI Interview Studio
 APP_ENV=development
-DATABASE_URL=postgresql+psycopg://postgres:postgres@postgres:5432/mock_interview
+DATABASE_URL=postgresql+psycopg://postgres:postgres@postgres:5432/interview_studio
 SECRET_KEY=change-this-in-local-env
 ACCESS_TOKEN_EXPIRE_MINUTES=10080
 OPENAI_API_KEY=your_dashscope_api_key

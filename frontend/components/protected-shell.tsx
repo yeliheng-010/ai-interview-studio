@@ -69,10 +69,10 @@ export function ProtectedShell({
           <div className="space-y-5">
             <div className="flex flex-wrap items-center gap-3">
               <Link href="/dashboard" className="display-font text-3xl tracking-wide">
-                Mock Atelier
+                AI Interview Studio
               </Link>
               <span className="rounded-full border border-line px-3 py-1 text-xs uppercase tracking-[0.28em] text-accent">
-                Resume To Interview
+                Resume-Based Practice
               </span>
             </div>
             <nav className="flex flex-wrap gap-2">

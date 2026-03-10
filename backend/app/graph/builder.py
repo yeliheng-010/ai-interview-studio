@@ -271,7 +271,7 @@ class InterviewGraphRunner:
             difficulty: len([item for item in final_items if item["difficulty"] == difficulty])
             for difficulty in DIFFICULTY_DISTRIBUTION
         }
-        title = f"{state.get('target_role', DEFAULT_TARGET_ROLE)} 模拟面试题集"
+        title = f"{state.get('target_role', DEFAULT_TARGET_ROLE)} 面试训练题集"
         meta = {
             "difficulty_breakdown": difficulty_breakdown,
             "categories": sorted({item["category"] for item in final_items}),

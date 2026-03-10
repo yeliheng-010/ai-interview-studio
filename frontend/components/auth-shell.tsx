@@ -17,7 +17,7 @@ export function AuthShell({
         <div className="paper-panel relative flex h-full flex-col rounded-[36px] p-8 lg:p-12">
           <div className="flex items-center justify-between">
             <Link href="/" className="display-font text-3xl tracking-wide">
-              Mock Atelier
+              AI Interview Studio
             </Link>
             <span className="rounded-full border border-line px-3 py-1 text-xs uppercase tracking-[0.28em] text-accent">
               AI 面试工作台
@@ -27,7 +27,7 @@ export function AuthShell({
             <p className="section-kicker">Interview Composer</p>
             <h1 className="display-font mt-4 text-5xl leading-tight lg:text-7xl">
               把简历变成一套可复盘的
-              <span className="text-accent">程序员模拟面试题库</span>
+              <span className="text-accent">程序员面试训练题库</span>
             </h1>
             <p className="mt-6 max-w-xl text-base leading-7 muted-text">{subtitle}</p>
           </div>

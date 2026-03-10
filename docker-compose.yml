@@ -2,7 +2,7 @@ services:
   postgres:
     image: postgres:16-alpine
     environment:
-      POSTGRES_DB: mock_interview
+      POSTGRES_DB: interview_studio
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     ports:
@@ -10,7 +10,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d mock_interview"]
+      test: ["CMD-SHELL", "pg_isready -U postgres -d interview_studio"]
       interval: 5s
       timeout: 5s
       retries: 20
@@ -21,7 +21,7 @@ services:
     env_file:
       - ./backend/.env
     environment:
-      DATABASE_URL: postgresql+psycopg://postgres:postgres@postgres:5432/mock_interview
+      DATABASE_URL: postgresql+psycopg://postgres:postgres@postgres:5432/interview_studio
       CORS_ORIGINS: http://localhost:3000
     ports:
       - "8000:8000"

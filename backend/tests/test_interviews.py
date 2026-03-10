@@ -21,7 +21,7 @@ def test_generate_interview_persists_full_set(client, monkeypatch) -> None:
 
     assert response.status_code == 200
     payload = response.json()
-    assert payload["title"] == "backend engineer 模拟面试题集"
+    assert payload["title"] == "backend engineer 面试训练题集"
     assert payload["target_role"] == "backend engineer"
     assert payload["interview_style"] == "project-deep-dive"
     assert payload["difficulty_breakdown"] == {"easy": 6, "medium": 8, "hard": 6}

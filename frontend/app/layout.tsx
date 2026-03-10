@@ -18,8 +18,8 @@ const bodyFont = IBM_Plex_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "Mock Atelier",
-  description: "AI mock interview platform powered by LangGraph"
+  title: "AI Interview Studio",
+  description: "AI interview practice platform powered by LangGraph"
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
