@@ -50,6 +50,10 @@ def build_mock_graph_state() -> dict:
             "domains": ["企业软件"],
             "strengths": ["接口设计", "数据建模"],
             "evidence_notes": ["简历提到使用 FastAPI 和 PostgreSQL 构建业务系统。"],
+            "resume_improvement_suggestions": [
+                "把与岗位 JD 强相关的技术栈（如缓存、接口稳定性）放在项目描述首句。",
+                "在项目经历中补充可量化结果，例如延迟优化比例或故障恢复时长。",
+            ],
         },
         "strategy": {
             "target_role": "backend engineer",

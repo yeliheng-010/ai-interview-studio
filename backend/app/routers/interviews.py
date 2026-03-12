@@ -1,6 +1,10 @@
 from __future__ import annotations
 
+import json
+import logging
+
 from fastapi import APIRouter, Depends, File, Form, UploadFile
+from fastapi.responses import StreamingResponse
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -16,6 +20,7 @@ from app.services.interview_service import (
 from app.services.serializers import question_set_to_detail, question_set_to_list_item
 
 router = APIRouter(prefix="/interviews", tags=["interviews"])
+logger = logging.getLogger(__name__)
 
 
 @router.post("/generate", response_model=InterviewSetDetail)
@@ -38,6 +43,42 @@ async def generate_interview_set(
         job_description_text=job_description_text,
     )
     return question_set_to_detail(question_set, favorite_question_ids=set())
+
+
+@router.post("/generate/stream")
+async def generate_interview_set_stream(
+    file: UploadFile = File(...),
+    jd_file: UploadFile | None = File(None),
+    target_role: str | None = Form(None),
+    interview_style: str | None = Form(None),
+    job_description_text: str | None = Form(None),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> StreamingResponse:
+    service = InterviewGenerationService(db)
+    file_name, pdf_bytes, resolved_job_description_text = await service.prepare_upload_inputs(
+        upload=file,
+        jd_upload=jd_file,
+        job_description_text=job_description_text,
+    )
+
+    async def event_stream():
+        try:
+            async for event in service.generate_from_bytes_stream(
+                user_id=current_user.id,
+                file_name=file_name,
+                pdf_bytes=pdf_bytes,
+                target_role=target_role,
+                interview_style=interview_style,
+                resolved_job_description_text=resolved_job_description_text,
+            ):
+                yield json.dumps(event, ensure_ascii=False) + "\n"
+        except Exception as exc:  # noqa: BLE001
+            logger.exception("stream generation failed")
+            message = getattr(exc, "detail", str(exc))
+            yield json.dumps({"event": "error", "detail": message}, ensure_ascii=False) + "\n"
+
+    return StreamingResponse(event_stream(), media_type="application/x-ndjson")
 
 
 @router.get("", response_model=PaginatedInterviewSets)

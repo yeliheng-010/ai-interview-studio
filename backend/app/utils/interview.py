@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import random
 import re
 from typing import Any
 
@@ -18,6 +19,7 @@ TARGET_ROLE_OPTIONS = [
     "DevOps engineer",
     "algorithm engineer",
     "data engineer",
+    "ai application engineer",
 ]
 
 INTERVIEW_STYLE_OPTIONS = [
@@ -46,6 +48,84 @@ VALID_CATEGORIES = [
     "架构设计",
     "工程实践",
     "安全",
+]
+
+LEETCODE_BONUS_COUNT = 2
+
+LEETCODE_QUESTION_BANK = [
+    {
+        "id": 146,
+        "title": "LRU Cache",
+        "difficulty": "hard",
+        "prompt": "请你设计并实现 LRU 缓存，要求 `get` 和 `put` 都是 O(1)。你会如何选择数据结构并处理更新顺序？",
+        "answer": (
+            "我会用哈希表加双向链表来实现。哈希表负责 O(1) 定位节点，双向链表负责维护最近使用顺序。"
+            "每次 `get` 命中或 `put` 更新时，我都会把对应节点移动到链表头。插入新节点时如果超容量，就淘汰链表尾节点并同步删除哈希表映射。"
+            "这样可以保证访问和更新都维持 O(1)，并且边界上要注意重复 put、容量为 1 以及命中后顺序刷新。"
+        ),
+        "intent": "考察哈希表与链表组合建模、复杂度分析和边界处理能力。",
+    },
+    {
+        "id": 560,
+        "title": "Subarray Sum Equals K",
+        "difficulty": "medium",
+        "prompt": "给定整数数组和 `k`，统计和为 `k` 的连续子数组个数。你会如何把时间复杂度降到 O(n)？",
+        "answer": (
+            "我会用前缀和加哈希计数来做。遍历到位置 i 时，当前前缀和是 `pre`，如果之前出现过 `pre-k`，就说明存在若干个区间和为 k。"
+            "所以每一步先累计答案 `count += freq[pre-k]`，再把当前 `pre` 的出现次数加一。初始化 `freq[0]=1` 可以覆盖从下标 0 开始的区间。"
+            "这个方法是 O(n) 时间、O(n) 空间，关键是理解“区间和 = 两个前缀和之差”。"
+        ),
+        "intent": "考察前缀和建模能力、哈希计数技巧和复杂度优化能力。",
+    },
+    {
+        "id": 215,
+        "title": "Kth Largest Element in an Array",
+        "difficulty": "medium",
+        "prompt": "在无序数组中找第 k 大元素，你会优先选择什么方案？不同方案的复杂度如何权衡？",
+        "answer": (
+            "我通常先给出两种方案：最小堆和快速选择。最小堆维护大小为 k 的堆，遍历数组时把更大的元素入堆并弹出堆顶，复杂度是 O(n log k)。"
+            "快速选择基于分区思想，平均 O(n) 但最坏 O(n^2)。面试里我会先实现最小堆保证稳定正确，再说明如果追求平均性能可用随机化 quickselect。"
+            "同时我会关注重复元素、k 的边界和原地修改副作用。"
+        ),
+        "intent": "考察候选人在多解场景下的复杂度取舍和实现稳定性。",
+    },
+    {
+        "id": 239,
+        "title": "Sliding Window Maximum",
+        "difficulty": "hard",
+        "prompt": "长度为 `k` 的滑动窗口最大值问题，你会如何用 O(n) 时间完成？",
+        "answer": (
+            "我会用单调队列。队列里存下标，并保持对应值单调递减。每次窗口右移时，先弹掉队尾所有小于当前值的元素，再把当前下标入队；"
+            "然后如果队首下标已经滑出窗口范围就弹出。此时队首就是当前窗口最大值。"
+            "这个方法每个元素最多进出队一次，所以总复杂度 O(n)。实现上我会重点处理窗口初始化和边界 `k=1`。"
+        ),
+        "intent": "考察单调队列思想、线性复杂度证明和边界处理能力。",
+    },
+    {
+        "id": 297,
+        "title": "Serialize and Deserialize Binary Tree",
+        "difficulty": "hard",
+        "prompt": "二叉树序列化与反序列化你会怎样设计协议，保证可还原且实现清晰？",
+        "answer": (
+            "我会选层序遍历方案，用逗号分隔节点值，空节点用 `#` 占位。序列化时按队列 BFS 输出，反序列化时同样按顺序重建左右子节点。"
+            "这个协议可读性好，也容易验证正确性。时间复杂度是 O(n)，空间复杂度也是 O(n)。"
+            "我会特别关注尾部连续空节点的处理、负数值解析和空树场景，保证编码解码是一一对应的。"
+        ),
+        "intent": "考察数据结构编码能力、协议设计意识和可逆性验证能力。",
+    },
+    {
+        "id": 199,
+        "title": "Binary Tree Right Side View",
+        "difficulty": "medium",
+        "prompt": "给定二叉树，返回从右侧看到的节点。你会选择 BFS 还是 DFS，为什么？",
+        "answer": (
+            "我会优先用 BFS 按层遍历，因为每层最后访问到的节点就是右视图结果，逻辑直观且不容易错。"
+            "DFS 也可以做，按“根-右-左”顺序遍历并记录每层首次出现的节点。"
+            "如果我在面试里写代码，我会先实现 BFS 确保可读性，再补充 DFS 作为等价解法。"
+            "复杂度方面两者都是 O(n)，空间取决于树的宽度或高度。"
+        ),
+        "intent": "考察树遍历策略选择、表达清晰度和复杂度分析能力。",
+    },
 ]
 
 
@@ -238,3 +318,32 @@ def build_local_question(
             f"如果线上系统在复杂依赖链路中出现雪崩风险，你会如何设计止损和恢复策略？",
         ]
     return templates[index_seed % len(templates)]
+
+
+def build_random_leetcode_items(
+    *,
+    resume_summary: dict[str, Any],
+    count: int = LEETCODE_BONUS_COUNT,
+) -> list[dict[str, Any]]:
+    if count <= 0:
+        return []
+
+    selected = random.sample(LEETCODE_QUESTION_BANK, k=min(count, len(LEETCODE_QUESTION_BANK)))
+    reference = (
+        "这是一道附加 LeetCode 算法题，用于检验编码与复杂度分析能力。"
+        if resume_summary.get("technical_stack")
+        else "简历信息有限，附加算法题按通用程序员场景评估。"
+    )
+    items: list[dict[str, Any]] = []
+    for item in selected:
+        items.append(
+            {
+                "difficulty": item["difficulty"],
+                "category": "算法与数据结构",
+                "question": f"LeetCode {item['id']}. {item['title']}：{item['prompt']}",
+                "answer": item["answer"],
+                "intent": item["intent"],
+                "reference_from_resume": reference,
+            }
+        )
+    return items

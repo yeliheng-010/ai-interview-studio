@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 from collections.abc import Iterable
+import re
 
 from app.models import AnswerFeedback, Favorite, Question, QuestionSet, UserAnswer
 from app.schemas.interview import (
     FavoriteItem,
+    InterviewAssessmentRead,
     InterviewSetDetail,
     InterviewSetListItem,
     ResumeSummaryRead,
@@ -25,6 +27,57 @@ def build_difficulty_breakdown(questions: Iterable[Question]) -> dict[str, int]:
         if question.difficulty in breakdown:
             breakdown[question.difficulty] += 1
     return breakdown
+
+
+def _tokenize_for_score(text: str) -> set[str]:
+    return set(re.findall(r"[\u4e00-\u9fffA-Za-z0-9_]+", text.lower()))
+
+
+def _estimate_overall_score_from_text(*, user_answer: str, reference_answer: str) -> int:
+    user_tokens = _tokenize_for_score(user_answer)
+    reference_tokens = _tokenize_for_score(reference_answer)
+    overlap_ratio = 0.0
+    if reference_tokens:
+        overlap_ratio = len(user_tokens & reference_tokens) / max(len(reference_tokens), 1)
+    length_score = min(len(user_answer.strip()) / 220.0, 1.0)
+    score = 45.0 + overlap_ratio * 35.0 + length_score * 20.0
+    return int(max(0, min(round(score), 100)))
+
+
+def build_interview_assessment(questions: Iterable[Question]) -> InterviewAssessmentRead:
+    answered_count = 0
+    scores: list[int] = []
+    for question in questions:
+        my_answer = question.user_answers[0] if question.user_answers else None
+        if my_answer is None:
+            continue
+
+        answered_count += 1
+        feedback_score = None
+        if my_answer.feedback is not None:
+            overall = my_answer.feedback.score_json.get("overall")
+            if isinstance(overall, (int, float)):
+                feedback_score = int(max(0, min(round(float(overall)), 100)))
+
+        if feedback_score is not None:
+            scores.append(feedback_score)
+        else:
+            scores.append(
+                _estimate_overall_score_from_text(
+                    user_answer=my_answer.answer_text,
+                    reference_answer=question.answer_text,
+                )
+            )
+
+    scored_count = len(scores)
+    average_overall_score = round(sum(scores) / scored_count, 1) if scored_count else 0.0
+    pass_rate = average_overall_score
+    return InterviewAssessmentRead(
+        answered_count=answered_count,
+        scored_count=scored_count,
+        average_overall_score=average_overall_score,
+        pass_rate=pass_rate,
+    )
 
 
 def feedback_to_schema(feedback: AnswerFeedback | None) -> AnswerFeedbackRead | None:
@@ -121,6 +174,7 @@ def question_set_to_detail(
         extraction_status=resume_session.extraction_status,
         extraction_quality_score=resume_session.extraction_quality_score,
         extraction_error_message=resume_session.extraction_error_message,
+        assessment=build_interview_assessment(question_set.questions),
         questions=questions,
     )
 

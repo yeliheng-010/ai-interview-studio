@@ -60,7 +60,7 @@ export default function DashboardPage() {
         {!query.isLoading && !query.isError && items.length === 0 ? (
           <EmptyState
             title="还没有生成记录"
-            description="上传一份程序员简历后，系统会生成 20 道覆盖 easy / medium / hard 的面试训练题。"
+            description="上传一份程序员简历后，系统会生成 20 道主面试题，并在末尾附加 2 道随机 LeetCode 算法题。"
             action={
               <Link href="/upload">
                 <Button>立即上传</Button>

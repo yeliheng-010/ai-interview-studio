@@ -11,6 +11,7 @@ class ResumeAnalysisLLMOutput(BaseModel):
     domains: list[str] = Field(default_factory=list)
     strengths: list[str] = Field(default_factory=list)
     evidence_notes: list[str] = Field(default_factory=list)
+    resume_improvement_suggestions: list[str] = Field(default_factory=list)
 
 
 class InterviewStrategyLLMOutput(BaseModel):

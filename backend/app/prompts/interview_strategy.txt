@@ -28,7 +28,8 @@
 4. 如果目标岗位是 frontend engineer，优先强调组件设计、状态管理、性能优化、工程化、浏览器与网络、可维护性。
 5. 如果目标岗位是 full-stack engineer，重点兼顾前后端协同、数据流、接口边界、交付效率与架构取舍。
 6. 如果目标岗位是 DevOps engineer 或 test development engineer，可提高自动化、发布流程、可观测性、稳定性与质量保障相关权重。
-7. 面试风格影响提问方式：
+7. 如果目标岗位是 ai application engineer，优先强调 LLM 应用工程化能力，包括 Prompt/Agent 工作流设计、RAG 与上下文管理、评估与回归、稳定性与成本控制、上线监控与安全边界。
+8. 面试风格影响提问方式：
    - fundamentals-heavy：更强调基础原理、底层理解、常见概念辨析。
    - project-deep-dive：更强调项目背景、方案选择、复盘与取舍。
    - system-design-heavy：更强调扩展性、稳定性、一致性、容量规划与架构演进。

@@ -44,7 +44,7 @@ export default function LoginPage() {
   return (
     <AuthShell
       title="登录"
-      subtitle="登录后即可上传简历、生成 20 道程序员面试训练题，并在历史记录中持续复盘。"
+      subtitle="登录后即可上传简历、生成 20 道主面试题 + 2 道随机 LeetCode 题，并在历史记录中持续复盘。"
     >
       <form className="paper-panel rounded-[30px] p-6" onSubmit={onSubmit}>
         <label className="block text-sm font-medium">邮箱</label>

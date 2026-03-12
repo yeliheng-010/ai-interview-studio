@@ -19,6 +19,7 @@ export type ResumeSummary = {
   domains: string[];
   strengths: string[];
   evidence_notes: string[];
+  resume_improvement_suggestions: string[];
 };
 
 export type Strategy = {
@@ -98,6 +99,12 @@ export type InterviewSetDetail = {
   extraction_status: string;
   extraction_quality_score: number | null;
   extraction_error_message: string | null;
+  assessment: {
+    answered_count: number;
+    scored_count: number;
+    average_overall_score: number;
+    pass_rate: number;
+  };
   questions: QuestionItem[];
 };
 

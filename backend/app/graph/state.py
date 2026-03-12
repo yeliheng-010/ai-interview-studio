@@ -22,6 +22,7 @@ class InterviewGraphState(TypedDict, total=False):
     easy_items: list[dict[str, Any]]
     medium_items: list[dict[str, Any]]
     hard_items: list[dict[str, Any]]
+    leetcode_items: list[dict[str, Any]]
     final_items: list[dict[str, Any]]
     title: str
     meta: dict[str, Any]

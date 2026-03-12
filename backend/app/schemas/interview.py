@@ -16,6 +16,7 @@ class ResumeSummaryRead(BaseModel):
     domains: list[str] = Field(default_factory=list)
     strengths: list[str] = Field(default_factory=list)
     evidence_notes: list[str] = Field(default_factory=list)
+    resume_improvement_suggestions: list[str] = Field(default_factory=list)
 
 
 class StrategyRead(BaseModel):
@@ -28,6 +29,13 @@ class StrategyRead(BaseModel):
         default_factory=lambda: {"easy": 6, "medium": 8, "hard": 6}
     )
     interview_tone: str = "真实程序员技术面试"
+
+
+class InterviewAssessmentRead(BaseModel):
+    answered_count: int = 0
+    scored_count: int = 0
+    average_overall_score: float = 0.0
+    pass_rate: float = 0.0
 
 
 class InterviewRegenerateRequest(BaseModel):
@@ -64,6 +72,7 @@ class InterviewSetDetail(BaseModel):
     extraction_status: str
     extraction_quality_score: float | None = None
     extraction_error_message: str | None = None
+    assessment: InterviewAssessmentRead
     questions: list[QuestionRead]
 
 

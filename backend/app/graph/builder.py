@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import logging
 from collections import defaultdict
+from collections.abc import AsyncIterator
 from typing import Any
 
 from langgraph.graph import END, START, StateGraph
@@ -19,7 +20,9 @@ from app.utils.interview import (
     DEFAULT_TARGET_ROLE,
     DIFFICULTY_DISTRIBUTION,
     VALID_CATEGORIES,
+    LEETCODE_BONUS_COUNT,
     build_fallback_answer,
+    build_random_leetcode_items,
     build_local_question,
     build_reference_fallback,
     normalize_generated_item,
@@ -61,6 +64,7 @@ class InterviewGraphRunner:
             self.generate_hard_questions_and_answers,
         )
         workflow.add_node("deduplicate_and_repair", self.deduplicate_and_repair)
+        workflow.add_node("append_leetcode_questions", self.append_leetcode_questions)
         workflow.add_node("finalize_payload", self.finalize_payload)
 
         workflow.add_edge(START, "extract_pdf_text")
@@ -78,7 +82,8 @@ class InterviewGraphRunner:
             "generate_hard_questions_and_answers",
         )
         workflow.add_edge("generate_hard_questions_and_answers", "deduplicate_and_repair")
-        workflow.add_edge("deduplicate_and_repair", "finalize_payload")
+        workflow.add_edge("deduplicate_and_repair", "append_leetcode_questions")
+        workflow.add_edge("append_leetcode_questions", "finalize_payload")
         workflow.add_edge("finalize_payload", END)
         return workflow.compile()
 
@@ -125,6 +130,46 @@ class InterviewGraphRunner:
                 "errors": [],
             }
         )
+
+    async def run_with_progress(
+        self,
+        *,
+        user_id: int,
+        file_name: str,
+        pdf_bytes: bytes,
+        target_role: str | None = None,
+        interview_style: str | None = None,
+        job_description_text: str | None = None,
+    ) -> AsyncIterator[dict[str, Any]]:
+        state: InterviewGraphState = {
+            "user_id": user_id,
+            "file_name": file_name,
+            "pdf_bytes": pdf_bytes,
+            "target_role": resolve_target_role(target_role),
+            "interview_style": resolve_interview_style(interview_style),
+            "job_description_text": resolve_job_description_text(job_description_text),
+            "errors": [],
+        }
+        steps: list[tuple[str, Any]] = [
+            ("extract_pdf_text", self.extract_pdf_text),
+            ("clean_resume_text", self.clean_resume_text),
+            ("validate_resume_text", self.validate_resume_text),
+            ("analyze_resume", self.analyze_resume),
+            ("plan_interview_strategy", self.plan_interview_strategy),
+            ("generate_easy_questions_and_answers", self.generate_easy_questions_and_answers),
+            ("generate_medium_questions_and_answers", self.generate_medium_questions_and_answers),
+            ("generate_hard_questions_and_answers", self.generate_hard_questions_and_answers),
+            ("deduplicate_and_repair", self.deduplicate_and_repair),
+            ("append_leetcode_questions", self.append_leetcode_questions),
+            ("finalize_payload", self.finalize_payload),
+        ]
+
+        for step_name, handler in steps:
+            update = await handler(state)
+            state.update(update)
+            yield {"event": "step_completed", "step": step_name, "update": update}
+
+        yield {"event": "completed", "state": state}
 
     async def extract_pdf_text(self, state: InterviewGraphState) -> dict[str, Any]:
         if state.get("raw_text"):
@@ -272,6 +317,15 @@ class InterviewGraphRunner:
 
         return {"final_items": final_items}
 
+    async def append_leetcode_questions(self, state: InterviewGraphState) -> dict[str, Any]:
+        leetcode_items = build_random_leetcode_items(
+            resume_summary=state["resume_summary"],
+            count=LEETCODE_BONUS_COUNT,
+        )
+        final_items = list(state["final_items"])
+        final_items.extend(leetcode_items)
+        return {"leetcode_items": leetcode_items, "final_items": final_items}
+
     async def finalize_payload(self, state: InterviewGraphState) -> dict[str, Any]:
         final_items = state["final_items"]
         difficulty_breakdown = {
@@ -289,6 +343,8 @@ class InterviewGraphRunner:
             "extraction_status": state.get("extraction_status", "validated"),
             "extraction_quality_score": state.get("extraction_quality_score", 0.0),
             "job_description_provided": bool(state.get("job_description_text")),
+            "leetcode_bonus_questions": len(state.get("leetcode_items", [])),
+            "core_questions": sum(DIFFICULTY_DISTRIBUTION.values()),
         }
         return {"title": title, "meta": meta}
 

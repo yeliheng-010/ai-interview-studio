@@ -75,3 +75,38 @@ def test_regenerate_interview_creates_new_set(client, monkeypatch) -> None:
     assert regenerate_response.status_code == 200
     assert regenerate_response.json()["title"] == "backend engineer 重生成题集"
     assert "Need FastAPI and PostgreSQL experience." in captured_regenerate_kwargs["job_description_text"]
+
+
+def test_generate_interview_stream_returns_progress_events(client, monkeypatch) -> None:
+    async def fake_run_with_progress(self, **kwargs):
+        state = build_mock_graph_state()
+        yield {
+            "event": "step_completed",
+            "step": "analyze_resume",
+            "update": {"resume_summary": state["resume_summary"]},
+        }
+        yield {
+            "event": "step_completed",
+            "step": "generate_easy_questions_and_answers",
+            "update": {"easy_items": state["final_items"][:2]},
+        }
+        yield {
+            "event": "step_completed",
+            "step": "append_leetcode_questions",
+            "update": {"leetcode_items": []},
+        }
+        yield {"event": "completed", "state": state}
+
+    monkeypatch.setattr(InterviewGraphRunner, "run_with_progress", fake_run_with_progress)
+    headers = auth_headers(client)
+
+    response = client.post(
+        "/api/interviews/generate/stream",
+        headers=headers,
+        files={"file": ("resume.pdf", b"%PDF-1.4 fake", "application/pdf")},
+    )
+
+    assert response.status_code == 200
+    assert '"event": "stage"' in response.text
+    assert '"event": "question"' in response.text
+    assert '"event": "completed"' in response.text

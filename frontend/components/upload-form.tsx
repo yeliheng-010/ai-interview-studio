@@ -7,8 +7,17 @@ import { ChangeEvent, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { api, getApiErrorMessage } from "@/lib/api";
+import { getToken } from "@/lib/auth";
 import { interviewStyleOptions, targetRoleOptions } from "@/lib/interview-options";
 import { InterviewSetDetail } from "@/types/api";
+
+type StreamQuestionPreview = {
+  index: number;
+  difficulty: string;
+  category: string;
+  question: string;
+  isLeetcode: boolean;
+};
 
 export function UploadForm() {
   const router = useRouter();
@@ -18,6 +27,9 @@ export function UploadForm() {
   const [interviewStyle, setInterviewStyle] = useState("standard");
   const [jobDescriptionText, setJobDescriptionText] = useState("");
   const [error, setError] = useState<string>("");
+  const [streamStage, setStreamStage] = useState("等待开始");
+  const [streamQuestions, setStreamQuestions] = useState<StreamQuestionPreview[]>([]);
+  const [resumeSuggestions, setResumeSuggestions] = useState<string[]>([]);
 
   const mutation = useMutation({
     mutationFn: async () => {
@@ -35,11 +47,111 @@ export function UploadForm() {
       if (jobDescriptionText.trim()) {
         formData.append("job_description_text", jobDescriptionText.trim());
       }
+      const token = getToken();
 
-      const response = await api.post<InterviewSetDetail>("/interviews/generate", formData, {
-        headers: { "Content-Type": "multipart/form-data" }
+      const response = await fetch(`${api.defaults.baseURL ?? "http://localhost:8000/api"}/interviews/generate/stream`, {
+        method: "POST",
+        headers: {
+          ...(token ? { Authorization: `Bearer ${token}` } : {})
+        },
+        body: formData
       });
-      return response.data;
+
+      if (!response.ok) {
+        let detail = `请求失败（${response.status}）`;
+        try {
+          const payload = await response.json();
+          if (typeof payload?.detail === "string") {
+            detail = payload.detail;
+          }
+        } catch {
+          // Ignore JSON parse failures and use fallback detail.
+        }
+        throw new Error(detail);
+      }
+
+      if (!response.body) {
+        throw new Error("当前环境不支持流式读取，请稍后重试。");
+      }
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder("utf-8");
+      let buffer = "";
+      let interviewId: number | null = null;
+
+      while (true) {
+        const { value, done } = await reader.read();
+        buffer += decoder.decode(value ?? new Uint8Array(), { stream: !done });
+        const lines = buffer.split("\n");
+        buffer = lines.pop() ?? "";
+
+        for (const rawLine of lines) {
+          const line = rawLine.trim();
+          if (!line) {
+            continue;
+          }
+          let event: Record<string, unknown>;
+          try {
+            event = JSON.parse(line);
+          } catch {
+            continue;
+          }
+
+          if (event.event === "stage") {
+            setStreamStage(typeof event.message === "string" ? event.message : "处理中");
+            continue;
+          }
+
+          if (event.event === "resume_suggestions" && Array.isArray(event.suggestions)) {
+            setResumeSuggestions(
+              event.suggestions
+                .map((item) => (typeof item === "string" ? item : ""))
+                .filter(Boolean)
+            );
+            continue;
+          }
+
+          if (event.event === "question") {
+            setStreamQuestions((current) => [
+              ...current,
+              {
+                index: Number(event.index ?? current.length + 1),
+                difficulty: String(event.difficulty ?? "unknown"),
+                category: String(event.category ?? "未分类"),
+                question: String(event.question ?? ""),
+                isLeetcode: Boolean(event.is_leetcode)
+              }
+            ]);
+            continue;
+          }
+
+          if (event.event === "completed" && typeof event.interview_id === "number") {
+            interviewId = event.interview_id;
+            continue;
+          }
+
+          if (event.event === "error") {
+            throw new Error(typeof event.detail === "string" ? event.detail : "生成失败，请稍后重试。");
+          }
+        }
+
+        if (done) {
+          break;
+        }
+      }
+
+      if (interviewId === null) {
+        throw new Error("流式生成未返回题集 ID，请重试。");
+      }
+
+      const detail = await api.get<InterviewSetDetail>(`/interviews/${interviewId}`);
+      return detail.data;
+    },
+    onMutate: () => {
+      setError("");
+      setStreamStage("开始上传与初始化...");
+      setStreamQuestions([]);
+      setResumeSuggestions([]);
     },
     onSuccess: (data) => {
       router.push(`/interviews/${data.id}`);
@@ -167,6 +279,47 @@ export function UploadForm() {
           </div>
         ) : null}
 
+        {mutation.isPending ? (
+          <section className="mt-5 rounded-[24px] border border-line bg-white/65 p-5">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="section-kicker">Streaming Generation</p>
+                <h4 className="mt-2 text-xl font-semibold">题目正在流式生成</h4>
+              </div>
+              <span className="rounded-full border border-line px-3 py-1 text-xs">
+                已到达 {streamQuestions.length} 题
+              </span>
+            </div>
+            <p className="mt-3 text-sm muted-text">当前阶段：{streamStage}</p>
+
+            {resumeSuggestions.length > 0 ? (
+              <div className="mt-4 rounded-[18px] border border-line bg-white/70 p-4">
+                <p className="text-xs uppercase tracking-[0.18em] muted-text">JD 对照简历修改建议</p>
+                <div className="mt-3 space-y-2 text-sm leading-7">
+                  {resumeSuggestions.map((suggestion) => (
+                    <p key={suggestion}>• {suggestion}</p>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+
+            <div className="mt-4 max-h-[320px] space-y-3 overflow-y-auto pr-1">
+              {streamQuestions.map((item) => (
+                <div
+                  key={`${item.index}-${item.question}`}
+                  className="rounded-[18px] border border-line bg-white/75 px-4 py-3"
+                >
+                  <p className="text-xs muted-text">
+                    Q{String(item.index).padStart(2, "0")} · {item.difficulty} · {item.category}
+                    {item.isLeetcode ? " · LeetCode" : ""}
+                  </p>
+                  <p className="mt-1 text-sm leading-7">{item.question}</p>
+                </div>
+              ))}
+            </div>
+          </section>
+        ) : null}
+
         <div className="mt-6 flex flex-wrap items-center justify-between gap-4">
           <div className="inline-flex items-center gap-2 text-sm muted-text">
             <FileText className="h-4 w-4 text-accent" />
@@ -176,10 +329,10 @@ export function UploadForm() {
             {mutation.isPending ? (
               <>
                 <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
-                正在生成
+                正在流式生成
               </>
             ) : (
-              "开始生成 20 题"
+              "开始流式生成（20+2 题）"
             )}
           </Button>
         </div>

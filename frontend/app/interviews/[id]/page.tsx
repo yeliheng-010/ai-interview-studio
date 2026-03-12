@@ -89,6 +89,7 @@ export default function InterviewDetailPage({ params }: { params: { id: string }
       queryClient.setQueryData<InterviewSetDetail>(["interview", params.id], (current) =>
         updateQuestion(current, questionId, (question) => ({ ...question, my_answer: answer }))
       );
+      void queryClient.invalidateQueries({ queryKey: ["interview", params.id] });
     }
   });
 
@@ -104,6 +105,7 @@ export default function InterviewDetailPage({ params }: { params: { id: string }
           my_answer: question.my_answer ? { ...question.my_answer, feedback } : question.my_answer
         }))
       );
+      void queryClient.invalidateQueries({ queryKey: ["interview", params.id] });
     }
   });
 
@@ -175,6 +177,16 @@ export default function InterviewDetailPage({ params }: { params: { id: string }
                   </span>
                 ))}
               </div>
+              {detail.resume_summary.resume_improvement_suggestions.length > 0 ? (
+                <div className="mt-5 rounded-[20px] border border-line bg-white/50 p-4">
+                  <p className="text-xs uppercase tracking-[0.18em] muted-text">简历修改建议（基于 JD 对照）</p>
+                  <div className="mt-3 space-y-2 text-sm leading-7">
+                    {detail.resume_summary.resume_improvement_suggestions.map((suggestion) => (
+                      <p key={suggestion}>• {suggestion}</p>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
             </div>
 
             <div className="paper-panel rounded-[28px] p-6">
@@ -211,6 +223,28 @@ export default function InterviewDetailPage({ params }: { params: { id: string }
                 </div>
                 <p className="mt-3 text-sm leading-7">
                   {detail.strategy.focus_areas.join("、")}，强调 {detail.strategy.emphasis.join("、")}
+                </p>
+              </div>
+              <div className="mt-4 rounded-[20px] border border-line bg-white/50 p-4">
+                <p className="text-xs uppercase tracking-[0.18em] muted-text">面试通过率评估</p>
+                <div className="mt-3 grid gap-3 sm:grid-cols-3">
+                  <div className="rounded-[16px] border border-line bg-white/70 p-3">
+                    <p className="text-xs muted-text">通过率</p>
+                    <p className="mt-1 text-xl font-semibold">{detail.assessment.pass_rate.toFixed(1)}%</p>
+                  </div>
+                  <div className="rounded-[16px] border border-line bg-white/70 p-3">
+                    <p className="text-xs muted-text">已作答</p>
+                    <p className="mt-1 text-xl font-semibold">{detail.assessment.answered_count}</p>
+                  </div>
+                  <div className="rounded-[16px] border border-line bg-white/70 p-3">
+                    <p className="text-xs muted-text">平均分</p>
+                    <p className="mt-1 text-xl font-semibold">
+                      {detail.assessment.average_overall_score.toFixed(1)}
+                    </p>
+                  </div>
+                </div>
+                <p className="mt-3 text-xs muted-text">
+                  通过率基于“你的回答 vs AI 参考答案”的评分结果自动估算；未生成反馈的答案会使用文本对齐评分兜底。
                 </p>
               </div>
             </div>

@@ -9,7 +9,8 @@ export const targetRoleOptions = [
   { value: "test development engineer", label: "测试开发工程师" },
   { value: "DevOps engineer", label: "DevOps 工程师" },
   { value: "algorithm engineer", label: "算法工程师" },
-  { value: "data engineer", label: "数据工程师" }
+  { value: "data engineer", label: "数据工程师" },
+  { value: "ai application engineer", label: "AI 应用开发工程师" }
 ] as const;
 
 export const interviewStyleOptions = [
